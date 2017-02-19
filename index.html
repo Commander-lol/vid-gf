@@ -3,47 +3,204 @@
     <head>
         <meta charset="UTF-8">
         <title>Vid Gif</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<style>
+			html, body {
+				margin: 0;
+				padding: 0;
+				font-size: 16px;
+				font-family: sans-serif;
+				font-weight: bold;
+				height: 100%;
+			}
+
+			.container {
+				height: 100vh;
+				overflow-y: auto;
+				background-color: #001F3F;
+				color: #FF4136;
+			}
+
+			.hidden {
+				display: none;
+			}
+
+			.not-visible { /* Different to hidden, which hides it to the browser as well */
+				width: 0.1px;
+				height: 0.1px;
+				opacity: 0;
+				overflow: hidden;
+				position: absolute;
+				z-index: -1;
+			}
+
+			.input-zone {
+				background-color: rgba(200,200,200,0.1);
+				margin: 5rem;
+				height: 300px;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-around;
+				align-items: center;
+			}
+
+			#download-list {
+				background-color: rgba(200,200,200,0.1);
+				margin: 5rem;
+				display: flex;
+				flex-direction: column;
+			}
+
+			.download {
+				height: 110px;
+				margin: 10px;
+
+				display: flex;
+				align-items: center;
+			}
+
+			.download span {
+				flex: 1;
+				text-align: center;
+			}
+
+			.input-zone.dragging {
+				background-color: #FF4136;
+			}
+
+			.button {
+				all: unset;
+				border: 2px #FF4136 solid;
+				color: #FF4136;
+				padding: 0.5rem 1rem;
+				border-radius: 3px;
+				transition: background-color 0.1s linear;
+				cursor: pointer;
+			}
+
+			.button:hover,
+			.button:focus {
+				color: #001F3F;
+				background-color: #FF4136;
+			}
+		</style>
+
     </head>
     <body>
-        <input type="file" id="file">
-        <button id="button">Upload</button>
+		<main class="container">
+			<div class="input-zone">
+				<svg id="input-loader" class="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="#FF4136">
+					<path transform="translate(2)" d="M0 12 V20 H4 V12z">
+						<animate attributeName="d" values="M0 12 V20 H4 V12z; M0 4 V28 H4 V4z; M0 12 V20 H4 V12z; M0 12 V20 H4 V12z" dur="1.2s" repeatCount="indefinite" begin="0" keytimes="0;.2;.5;1" keySplines="0.2 0.2 0.4 0.8;0.2 0.6 0.4 0.8;0.2 0.8 0.4 0.8" calcMode="spline"  />
+					</path>
+					<path transform="translate(8)" d="M0 12 V20 H4 V12z">
+						<animate attributeName="d" values="M0 12 V20 H4 V12z; M0 4 V28 H4 V4z; M0 12 V20 H4 V12z; M0 12 V20 H4 V12z" dur="1.2s" repeatCount="indefinite" begin="0.2" keytimes="0;.2;.5;1" keySplines="0.2 0.2 0.4 0.8;0.2 0.6 0.4 0.8;0.2 0.8 0.4 0.8" calcMode="spline"  />
+					</path>
+					<path transform="translate(14)" d="M0 12 V20 H4 V12z">
+						<animate attributeName="d" values="M0 12 V20 H4 V12z; M0 4 V28 H4 V4z; M0 12 V20 H4 V12z; M0 12 V20 H4 V12z" dur="1.2s" repeatCount="indefinite" begin="0.4" keytimes="0;.2;.5;1" keySplines="0.2 0.2 0.4 0.8;0.2 0.6 0.4 0.8;0.2 0.8 0.4 0.8" calcMode="spline" />
+					</path>
+					<path transform="translate(20)" d="M0 12 V20 H4 V12z">
+						<animate attributeName="d" values="M0 12 V20 H4 V12z; M0 4 V28 H4 V4z; M0 12 V20 H4 V12z; M0 12 V20 H4 V12z" dur="1.2s" repeatCount="indefinite" begin="0.6" keytimes="0;.2;.5;1" keySplines="0.2 0.2 0.4 0.8;0.2 0.6 0.4 0.8;0.2 0.8 0.4 0.8" calcMode="spline" />
+					</path>
+					<path transform="translate(26)" d="M0 12 V20 H4 V12z">
+						<animate attributeName="d" values="M0 12 V20 H4 V12z; M0 4 V28 H4 V4z; M0 12 V20 H4 V12z; M0 12 V20 H4 V12z" dur="1.2s" repeatCount="indefinite" begin="0.8" keytimes="0;.2;.5;1" keySplines="0.2 0.2 0.4 0.8;0.2 0.6 0.4 0.8;0.2 0.8 0.4 0.8" calcMode="spline" />
+					</path>
+				</svg>
+				<div class="input-selector">
+					<input type="file" id="file" class="not-visible">
+					<label for="file" class="input-label button">Choose a file...</label>
+				</div>
+				<button id="button" class="button">Upload</button>
+			</div>
+			<div id="download-list"></div>
+		</main>
 
     <script>
-        $ = document.querySelector.bind(document)
+        const $ = sel => document.querySelector(sel)
+		const $$ = sel => Array.from(document.querySelectorAll(sel))
+		const el = (el, attr, children) => {
+        	attr = attr || {}
+        	const e = document.createElement(el)
+			for (const prop in attr) {
+        		e.setAttribute(prop, attr[prop])
+			}
+			if (children != null) {
+        		if (!Array.isArray(children)) children = [children]
+        		children.forEach(child => {
+        			if (child instanceof HTMLElement) {
+        				e.appendChild(child)
+					} else {
+        				const node = document.createTextNode(child)
+						e.appendChild(node)
+					}
+				})
+			}
+			return e
+		}
+
+		const upload = function() {
+        	const body = new FormData()
+			const file = $('#file').files[0]
+
+			const loader = $('#input-loader')
+			const selector = $('.input-selector')
+
+			const list = $('#download-list')
+
+			loader.classList.remove('hidden')
+			selector.classList.add('hidden')
+
+			body.append('file', file)
+
+			fetch('convert', {
+				method: 'POST',
+				body,
+			})
+			.then(result => Promise.all([result.blob(), result.headers]))
+			.then(parts => new Promise(r => {
+				const file = parts[0]
+				const headers = parts[1]
+				const reader = new FileReader()
+				const name = headers.get('X-File-Name')
+
+				console.log(headers)
+
+				reader.readAsDataURL(file)
+				reader.onloadend = function() {
+					r({ name, file: reader.result })
+				}
+
+				{
+					const a = document.createElement('a')
+					const url = URL.createObjectURL(file)
+
+					a.href = url
+					a.download = name
+
+					a.click()
+					URL.revokeObjectURL(url)
+				}
+			}))
+			.then(parsed => {
+				const nameNode = el('span', null, parsed.name)
+				const imgNode = el('img', { src: parsed.file, width: 100, height: 100 })
+				const child = el('div', { 'class': 'download' }, [nameNode, imgNode])
+
+				list.appendChild(child)
+
+				loader.classList.add('hidden')
+				selector.classList.remove('hidden')
+			})
+		}
 
         $('#button').addEventListener('click', function() {
-            {
-                const fd = new FormData();
-                const file = $('#file').files[0]
-                fd.append('file', file)
-
-                console.log(file)
-
-                fetch('/convert', {
-                    method: 'POST',
-                    body: fd,
-                })
-                    .then(e => e.blob()).then(blob => new Promise(r => {
-                    	console.log(blob)
-                        var reader = new window.FileReader();
-                        reader.readAsDataURL(blob);
-                        reader.onloadend = function() {
-                            base64data = reader.result;
-                            r(base64data)
-                        }
-                        const a = document.createElement('a')
-                        const url = window.URL.createObjectURL(blob);
-                        a.href = url;
-                        a.download = file.name;
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    }))
-                    .then(data => {
-                    	document.write(`<img src="data:${data}"/>`)
-                    })
-                    .catch(e => console.log(e.message, e))
-            }
+           upload()
         })
+
+		$('#file').addEventListener('change', function() {
+			$('.input-label').innerText = $('#file').files[0].name
+		})
     </script>
     </body>
 </html>
