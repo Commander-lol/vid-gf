@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Vid Gif</title>
+    </head>
+    <body>
+        <input type="file" id="file">
+        <button id="button">Upload</button>
+
+    <script>
+        $ = document.querySelector.bind(document)
+
+        $('#button').addEventListener('click', function() {
+            {
+                const fd = new FormData();
+                const file = $('#file').files[0]
+                fd.append('file', file)
+
+                console.log(file)
+
+                fetch('/convert', {
+                    method: 'POST',
+                    body: fd,
+                })
+                    .then(e => e.blob()).then(blob => new Promise(r => {
+                    	console.log(blob)
+                        var reader = new window.FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = function() {
+                            base64data = reader.result;
+                            r(base64data)
+                        }
+                        const a = document.createElement('a')
+                        const url = window.URL.createObjectURL(blob);
+                        a.href = url;
+                        a.download = file.name;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    }))
+                    .then(data => {
+                    	document.write(`<img src="data:${data}"/>`)
+                    })
+                    .catch(e => console.log(e.message, e))
+            }
+        })
+    </script>
+    </body>
+</html>
