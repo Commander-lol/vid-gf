@@ -6,20 +6,20 @@
   "author": "Louis Capitanchik <contact@louiscap.co>",
   "license": "BSD 2-Clause",
   "scripts": {
-    "dev": "nodemon app"
+	"dev": "nodemon app"
   },
   "dependencies": {
-    "aws-sdk": "^2.16.0",
-    "dotenv": "^4.0.0",
-    "express": "^4.14.1",
-    "fluent-ffmpeg": "^2.1.0",
-    "level": "^1.6.0",
-    "multer": "^1.3.0",
-    "multer-storage-s3": "^1.1.1",
-    "streamifier": "^0.1.1",
-    "uuid": "^3.0.1"
+	"aws-sdk": "^2.16.0",
+	"dotenv": "^4.0.0",
+	"express": "^4.14.1",
+	"fluent-ffmpeg": "^2.1.0",
+	"level": "^1.6.0",
+	"multer": "^1.3.0",
+	"multer-storage-s3": "^1.1.1",
+	"streamifier": "^0.1.1",
+	"uuid": "^3.0.1"
   },
   "devDependencies": {
-    "nodemon": "^1.11.0"
+	"nodemon": "^1.11.0"
   }
 }
